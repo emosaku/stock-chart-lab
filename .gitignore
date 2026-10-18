@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables -- real project IDs, keys and tokens live here. Never committed.
+.env
+
+# Credentials
+*.pem
+*-credentials.json
+service-account*.json
+
+# Testing / tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data (raw and processed are git-ignored; keep .gitkeep placeholders)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Local DuckDB database (rebuilt by `stocklab ingest`; BigQuery replaces it in the cloud)
+data/*.duckdb
+data/*.duckdb.wal
+
+# Trained models -- anchored to the root; a bare "models/" would also match
+# src/<package>/models/ and silently exclude real code
+/models/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/

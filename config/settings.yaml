@@ -1,0 +1,20 @@
+# Stock Chart Lab settings: what to analyse and with which parameters.
+# Environment-specific values (DB path, GCP project, storage backend) live in .env;
+# this file holds the *analysis* choices and is committed.
+#
+# Sections below `data` are filled in by their phase. Until then they're placeholders,
+# so the shape of the config is visible from day one.
+
+data:
+  # Add a ticker here and the next `stocklab ingest` backfills its full history.
+  tickers: [GOOG, META, AMZN]
+  # Earliest date to request. yfinance returns from the listing date when that's
+  # later (META only listed in May 2012), so "10+ years where available".
+  start_date: "2010-01-01"
+  # null = up to the latest completed trading day.
+  end_date: null
+
+indicators: {}    # Phase 2: SMA/EMA windows, RSI/MACD/Bollinger/ATR params
+signals: {}       # Phase 3: thresholds (e.g. RSI 70/30), support/resistance lookback
+backtest: {}      # Phase 4: fees, slippage, initial cash
+models: {}        # Phase 5: walk-forward window sizes, feature lags, model params

@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "stock-chart-lab"
+version = "0.1.0"
+description = "Stock chart analysis and prediction lab: OHLCV pipeline, technical indicators, rule-based signals, backtests, walk-forward ML, Streamlit dashboard"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+    "pandas",
+    "yfinance",
+    "duckdb",
+    "pyyaml",
+    "pydantic",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+]
+all = [
+    "stock-chart-lab[indicators,backtest,ml,app]",
+]
+indicators = [
+    # 0.4+ is the numpy-2-compatible line; 0.3.x imports numpy.NaN and breaks
+    "pandas-ta>=0.4",
+]
+backtest = [
+    "vectorbt",
+    # vectorbt 1.0 registers a scattermapbox template that plotly 7 removed
+    "plotly>=6,<7",
+]
+ml = [
+    "scikit-learn",
+    "xgboost",
+]
+app = [
+    "streamlit",
+    "plotly>=6,<7",
+]
+gcp = [
+    "google-cloud-bigquery",
+    "db-dtypes",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/stocklab"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.ruff.format]
+quote-style = "double"

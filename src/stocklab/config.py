@@ -16,7 +16,7 @@ from typing import Any
 
 import yaml
 from dotenv import load_dotenv
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 load_dotenv()
 
@@ -34,6 +34,17 @@ class DataSettings(BaseModel):
     tickers: list[str]
     start_date: date
     end_date: date | None = None
+    # Exchange calendar used to know which days should have a bar (XNYS = NYSE; the
+    # Nasdaq-listed tickers here trade the same sessions).
+    calendar: str = "XNYS"
+    # Incremental runs re-fetch this many already-stored sessions. The overlap picks up
+    # late corrections to recent bars and is compared against storage to detect
+    # history restatements (see ingestion.pipeline).
+    overlap_days: int = Field(default=5, ge=2)
+    # Relative difference in close/adj_close on overlap days that counts as a restatement.
+    restatement_tolerance: float = Field(default=1e-4, gt=0)
+    # A daily adjusted-close move larger than this (0.25 = 25%) is flagged for review.
+    max_daily_move: float = Field(default=0.25, gt=0)
 
     @field_validator("tickers")
     @classmethod
@@ -44,6 +55,12 @@ class DataSettings(BaseModel):
         if len(set(cleaned)) != len(cleaned):
             raise ValueError("duplicate tickers in config")
         return cleaned
+
+    @model_validator(mode="after")
+    def _check_range(self) -> "DataSettings":
+        if self.end_date and self.end_date < self.start_date:
+            raise ValueError("end_date is before start_date")
+        return self
 
 
 class Settings(BaseModel):

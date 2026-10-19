@@ -13,6 +13,15 @@ data:
   start_date: "2010-01-01"
   # null = up to the latest completed trading day.
   end_date: null
+  # Trading calendar that defines which days should have a bar (XNYS = NYSE).
+  calendar: XNYS
+  # Incremental runs re-fetch the last N stored sessions to catch late corrections and
+  # detect when Yahoo has restated history (new dividend/split) -> full refresh.
+  overlap_days: 5
+  restatement_tolerance: 0.0001   # 0.01% relative change in close counts as restated
+  # Data-quality: flag any single-day adjusted-close move bigger than this (25%).
+  # Real moves this big happen (META fell 26% on 2022-02-03), so it's a warning.
+  max_daily_move: 0.25
 
 indicators: {}    # Phase 2: SMA/EMA windows, RSI/MACD/Bollinger/ATR params
 signals: {}       # Phase 3: thresholds (e.g. RSI 70/30), support/resistance lookback

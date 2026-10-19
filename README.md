@@ -68,7 +68,7 @@ across the whole codebase:
 | Phase | Description | Status |
 |---|---|---|
 | 0 | Scaffolding, tooling, environment | **Complete** |
-| 1 | Data pipeline: yfinance → DuckDB, incremental updates, data-quality checks | Not started |
+| 1 | Data pipeline: yfinance → DuckDB, incremental updates, data-quality checks | **Complete** |
 | 2 | Indicators: SMA/EMA 20/50/200, RSI, MACD, Bollinger Bands, ATR, volume MA | Not started |
 | 3 | Signals: golden/death cross, RSI extremes, MACD crosses, BB breakouts, support/resistance | Not started |
 | 4 | Backtesting: vectorbt per signal, with costs, vs. buy-and-hold | Not started |
@@ -76,12 +76,25 @@ across the whole codebase:
 | 6 | Dashboard: Streamlit candlesticks, overlays, signals, backtests, predictions | Not started |
 | 7 | GCP migration: BigQuery, Cloud Run jobs and Scheduler, Cloud Run dashboard | Later |
 
+## Usage
+
+```bash
+stocklab ingest                  # first run backfills ~15 years; later runs are incremental
+stocklab status                  # coverage per ticker, latest run, data-quality findings
+stocklab check-source            # quick live check that yfinance is answering
+```
+
+Re-running `ingest` is safe. It only fetches sessions that have finished since the last
+run, and re-fetches the whole ticker if Yahoo has restated history after a split or
+dividend. See [docs/phase1-data-pipeline.md](docs/phase1-data-pipeline.md).
+
 ## Project layout
 
 ```
 config/settings.yaml   tickers, date ranges, per-phase parameters
 src/stocklab/
 ├── config.py          .env (where things live) + settings.yaml (what to analyse)
+├── cli.py             `stocklab` commands, one per pipeline step
 ├── storage/           schema and all DB access; DuckDB backend, BigQuery later
 ├── ingestion/         yfinance fetch, incremental upsert, data-quality checks
 ├── features/          pandas-ta indicators, ML feature builders
@@ -90,7 +103,7 @@ src/stocklab/
 ├── models/            walk-forward validation, baselines, logistic regression, XGBoost
 └── app/               Streamlit dashboard (read-only)
 tests/                 mirrors src/; uses frozen fixtures and never hits the network
-docs/                  decisions log, trading-concepts glossary
+docs/                  per-phase decisions, trading-concepts glossary
 ```
 
 ## Setup

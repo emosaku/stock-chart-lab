@@ -97,13 +97,43 @@ class IndicatorSettings(BaseModel):
         return sorted(v)
 
 
+class SignalSettings(BaseModel):
+    # Golden/death cross: which two SMAs (must be in indicators.sma_windows).
+    cross_fast_sma: int = 50
+    cross_slow_sma: int = 200
+    rsi_oversold: float = Field(default=30, gt=0, lt=100)
+    rsi_overbought: float = Field(default=70, gt=0, lt=100)
+    # Swing highs/lows: a bar whose high (low) is the highest (lowest) of the n bars on
+    # each side. It's only *known* n bars later, which is when the level becomes usable.
+    pivot_window: int = Field(default=5, ge=2)
+    # Ignore support/resistance levels whose pivot is older than this many sessions.
+    max_level_age: int = Field(default=250, gt=0)
+
+    @model_validator(mode="after")
+    def _check(self) -> "SignalSettings":
+        if self.cross_fast_sma >= self.cross_slow_sma:
+            raise ValueError("cross_fast_sma must be shorter than cross_slow_sma")
+        if self.rsi_oversold >= self.rsi_overbought:
+            raise ValueError("rsi_oversold must be below rsi_overbought")
+        return self
+
+
 class Settings(BaseModel):
     data: DataSettings
     indicators: IndicatorSettings = IndicatorSettings()
+    signals: SignalSettings = SignalSettings()
     # Typed properly when each phase lands; plain dicts until then.
-    signals: dict[str, Any] = {}
     backtest: dict[str, Any] = {}
     models: dict[str, Any] = {}
+
+    @model_validator(mode="after")
+    def _cross_smas_are_computed(self) -> "Settings":
+        missing = {self.signals.cross_fast_sma, self.signals.cross_slow_sma} - set(
+            self.indicators.sma_windows
+        )
+        if missing:
+            raise ValueError(f"signals cross SMAs {sorted(missing)} not in indicators.sma_windows")
+        return self
 
 
 def resolve_path(path: str) -> Path:

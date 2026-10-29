@@ -70,7 +70,7 @@ across the whole codebase:
 | 0 | Scaffolding, tooling, environment | **Complete** |
 | 1 | Data pipeline: yfinance → DuckDB, incremental updates, data-quality checks | **Complete** |
 | 2 | Indicators: SMA/EMA 20/50/200, RSI, MACD, Bollinger Bands, ATR, volume MA | **Complete** |
-| 3 | Signals: golden/death cross, RSI extremes, MACD crosses, BB breakouts, support/resistance | Not started |
+| 3 | Signals: golden/death cross, RSI extremes, MACD crosses, BB breakouts, support/resistance | **Complete** |
 | 4 | Backtesting: vectorbt per signal, with costs, vs. buy-and-hold | Not started |
 | 5 | ML: next-day direction and 5-day volatility, LR baseline and XGBoost, walk-forward | Not started |
 | 6 | Dashboard: Streamlit candlesticks, overlays, signals, backtests, predictions | Not started |
@@ -81,6 +81,7 @@ across the whole codebase:
 ```bash
 stocklab ingest                  # first run backfills ~15 years; later runs are incremental
 stocklab indicators              # recompute all technical indicators from stored prices
+stocklab signals                 # detect buy/sell signal events; prints counts + latest
 stocklab status                  # coverage per ticker, latest run, data-quality findings
 stocklab check-source            # quick live check that yfinance is answering
 ```
@@ -90,7 +91,8 @@ run, and re-fetches the whole ticker if Yahoo has restated history after a split
 dividend. See [docs/phase1-data-pipeline.md](docs/phase1-data-pipeline.md).
 Indicators use the split-adjusted close and returns use the adjusted close; see
 [docs/price-basis-decision.md](docs/price-basis-decision.md) and
-[docs/phase2-indicators.md](docs/phase2-indicators.md).
+[docs/phase2-indicators.md](docs/phase2-indicators.md). Signals are described in
+[docs/phase3-signals.md](docs/phase3-signals.md).
 
 ## Project layout
 

@@ -3,6 +3,7 @@ later run unchanged as a Cloud Run job.
 
     stocklab ingest [--tickers GOOG META] [--full-refresh]
     stocklab indicators [--tickers GOOG META]
+    stocklab signals [--tickers GOOG] [--recent 10]
     stocklab status
     stocklab check-source [--ticker GOOG]
 """
@@ -34,6 +35,11 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("indicators", help="recompute technical indicators from stored prices")
     p.add_argument("--tickers", nargs="+", help="subset of configured tickers (default: all)")
     p.set_defaults(func=cmd_indicators)
+
+    p = sub.add_parser("signals", help="detect signal events from stored indicators")
+    p.add_argument("--tickers", nargs="+", help="subset of configured tickers (default: all)")
+    p.add_argument("--recent", type=int, default=10, help="print the N latest signals")
+    p.set_defaults(func=cmd_signals)
 
     p = sub.add_parser("status", help="coverage, latest run and data-quality summary")
     p.set_defaults(func=cmd_status)
@@ -111,6 +117,36 @@ def cmd_indicators(args) -> int:
     finally:
         store.close()
     print(pd.DataFrame(results).to_string(index=False))
+    return 1 if any(r["status"] != "ok" for r in results) else 0
+
+
+def cmd_signals(args) -> int:
+    from stocklab.signals import run_signals
+    from stocklab.storage import get_storage
+
+    settings = get_settings()
+    tickers = [t.upper() for t in args.tickers] if args.tickers else None
+    unknown = set(tickers or []) - set(settings.data.tickers)
+    if unknown:
+        print(f"not in config/settings.yaml: {sorted(unknown)}", file=sys.stderr)
+        return 2
+    store = get_storage()
+    try:
+        results = run_signals(settings, store, tickers=tickers)
+        signals = store.read("signals", tickers or settings.data.tickers)
+    finally:
+        store.close()
+    print(pd.DataFrame(results).to_string(index=False))
+    if not signals.empty:
+        print("\nSignal counts:")
+        counts = signals.groupby(["signal", "ticker"]).size().unstack(fill_value=0)
+        print(counts.to_string())
+        if args.recent > 0:
+            print(f"\n{args.recent} most recent:")
+            recent = signals.sort_values("date").tail(args.recent)
+            print(
+                recent[["date", "ticker", "signal", "direction", "detail"]].to_string(index=False)
+            )
     return 1 if any(r["status"] != "ok" for r in results) else 0
 
 

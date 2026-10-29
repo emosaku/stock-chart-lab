@@ -75,4 +75,40 @@ that day and earlier days, never later ones.
 - **Volume moving average.** The 20-day average volume. It's "normal" activity, so a
   breakout on twice the usual volume can be told apart from one on a quiet day.
 
-<!-- Phases 3–5 add signals, backtest metrics and ML evaluation terms. -->
+## Signals (Phase 3)
+
+A *signal* is a rule-based event: a dated "something just happened" that a trading rule
+could act on. Each has a *direction*: **bullish** means it conventionally suggests the
+price will rise (a reason to buy), **bearish** that it will fall (a reason to sell or
+stay out). Whether the convention actually holds is tested in Phase 4.
+
+- **Event vs state.** "The 50-day SMA is above the 200-day" is a state that lasts for
+  months. "It crossed above today" is an event that happens once. Signals are events.
+- **Golden cross / death cross.** The 50-day SMA crossing above (golden, bullish) or
+  below (death, bearish) the 200-day SMA: the medium-term trend turning relative to
+  the long-term one. Rare: about 8–11 of each per stock since 2010. They lag, because
+  both averages move slowly, so they often fire well after the turn.
+- **Oversold recovery / overbought reversal.** RSI rising back above 30 after being
+  below it (bullish), or falling back below 70 after being above it (bearish). Firing on
+  the exit rather than the entry avoids "catching a falling knife": buying while a
+  crash is still under way.
+- **MACD crossover.** MACD crossing its signal line: short-term momentum turning up
+  (bullish) or down (bearish). Frequent, around 10 a year per direction, and noisy.
+- **Bollinger breakout.** A close outside the bands: a move unusually large for recent
+  volatility. Read here as momentum (up = bullish). The opposite *mean-reversion*
+  reading says a stretched price tends to snap back.
+- **Swing high / swing low.** A day whose high (low) is the highest (lowest) of the five
+  days on each side, i.e. a local peak (trough). It can only be confirmed five days
+  later, once the price has visibly turned.
+- **Resistance / support.** Price levels where the stock previously turned down
+  (resistance, at a swing high) or up (support, at a swing low). Traders expect them to
+  hold again. A **breakout** is a close above resistance (bullish). A **breakdown** is
+  a close below support (bearish).
+- **Volume confirmation.** A signal on heavy volume (well above the 20-day average) is
+  usually considered more meaningful, because many participants acted on it. Each
+  signal stores its `volume_ratio`.
+- **Whipsaw.** A signal that reverses almost immediately, such as a MACD cross up
+  followed by a cross down two days later. Common in sideways markets, and the main
+  cost of frequent signals.
+
+<!-- Phases 4–5 add backtest metrics and ML evaluation terms. -->

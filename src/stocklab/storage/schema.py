@@ -125,6 +125,51 @@ INDICATORS = Table(
     date_column="date",
 )
 
+# Rule-based signal events: one row per ticker, day and signal type. Recomputed in full
+# per ticker, like indicators.
+SIGNALS = Table(
+    name="signals",
+    columns={
+        "ticker": "string",
+        "date": "date",  # the close at which the event became known
+        "signal": "string",  # e.g. golden_cross, rsi_oversold_recovery
+        "direction": "string",  # bullish | bearish
+        "price": "float",  # close on that day
+        "value": "float",  # the number that triggered it (RSI, level price, ...)
+        "volume_ratio": "float",  # volume / 20-day average volume that day
+        "detail": "string",
+        "computed_at": "timestamp",
+    },
+    primary_key=("ticker", "date", "signal"),
+    date_column="date",
+)
+
+# Support/resistance levels from swing lows/highs. pivot_date is the swing bar itself;
+# confirmed_date is when it could first be known (pivot_window bars later). Anything
+# that uses a level must only do so after confirmed_date.
+PRICE_LEVELS = Table(
+    name="price_levels",
+    columns={
+        "ticker": "string",
+        "pivot_date": "date",
+        "level_type": "string",  # support | resistance
+        "price": "float",
+        "confirmed_date": "date",
+        "computed_at": "timestamp",
+    },
+    primary_key=("ticker", "pivot_date", "level_type"),
+    date_column="pivot_date",
+)
+
 TABLES: dict[str, Table] = {
-    t.name: t for t in (PRICES_DAILY, CORPORATE_ACTIONS, INGEST_RUNS, DQ_ISSUES, INDICATORS)
+    t.name: t
+    for t in (
+        PRICES_DAILY,
+        CORPORATE_ACTIONS,
+        INGEST_RUNS,
+        DQ_ISSUES,
+        INDICATORS,
+        SIGNALS,
+        PRICE_LEVELS,
+    )
 }

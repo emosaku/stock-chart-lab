@@ -33,6 +33,15 @@ indicators:
   bollinger: {length: 20, std: 2.0}
   atr_length: 14
   volume_ma_window: 20
-signals: {}       # Phase 3: thresholds (e.g. RSI 70/30), support/resistance lookback
+# Phase 3. A signal is an *event*: the day something changes (a line crosses another,
+# RSI leaves a zone), not every day a condition holds. Detected at the close of day t
+# from data up to t; Phase 4 trades on the next bar.
+signals:
+  cross_fast_sma: 50        # golden cross = 50-day SMA crosses above the 200-day
+  cross_slow_sma: 200
+  rsi_oversold: 30          # RSI rising back above 30 = oversold recovery (bullish)
+  rsi_overbought: 70        # RSI falling back below 70 = overbought reversal (bearish)
+  pivot_window: 5           # swing high/low = extreme of 5 bars either side (~2 weeks)
+  max_level_age: 250        # support/resistance older than ~1 trading year is ignored
 backtest: {}      # Phase 4: fees, slippage, initial cash
 models: {}        # Phase 5: walk-forward window sizes, feature lags, model params

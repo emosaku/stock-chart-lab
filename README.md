@@ -69,7 +69,7 @@ across the whole codebase:
 |---|---|---|
 | 0 | Scaffolding, tooling, environment | **Complete** |
 | 1 | Data pipeline: yfinance → DuckDB, incremental updates, data-quality checks | **Complete** |
-| 2 | Indicators: SMA/EMA 20/50/200, RSI, MACD, Bollinger Bands, ATR, volume MA | Not started |
+| 2 | Indicators: SMA/EMA 20/50/200, RSI, MACD, Bollinger Bands, ATR, volume MA | **Complete** |
 | 3 | Signals: golden/death cross, RSI extremes, MACD crosses, BB breakouts, support/resistance | Not started |
 | 4 | Backtesting: vectorbt per signal, with costs, vs. buy-and-hold | Not started |
 | 5 | ML: next-day direction and 5-day volatility, LR baseline and XGBoost, walk-forward | Not started |
@@ -80,6 +80,7 @@ across the whole codebase:
 
 ```bash
 stocklab ingest                  # first run backfills ~15 years; later runs are incremental
+stocklab indicators              # recompute all technical indicators from stored prices
 stocklab status                  # coverage per ticker, latest run, data-quality findings
 stocklab check-source            # quick live check that yfinance is answering
 ```
@@ -87,6 +88,9 @@ stocklab check-source            # quick live check that yfinance is answering
 Re-running `ingest` is safe. It only fetches sessions that have finished since the last
 run, and re-fetches the whole ticker if Yahoo has restated history after a split or
 dividend. See [docs/phase1-data-pipeline.md](docs/phase1-data-pipeline.md).
+Indicators use the split-adjusted close and returns use the adjusted close; see
+[docs/price-basis-decision.md](docs/price-basis-decision.md) and
+[docs/phase2-indicators.md](docs/phase2-indicators.md).
 
 ## Project layout
 
@@ -113,7 +117,7 @@ git clone https://github.com/emosaku/stock-chart-lab.git
 cd stock-chart-lab
 python3.12 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev,all]"      # or just ".[dev]" for the Phase 1 core
+pip install -e ".[dev,all]"      # or just ".[dev]" for the pipeline core (phases 1-2)
 cp .env.example .env              # defaults work locally; set GCP_PROJECT_ID for cloud work
 pytest
 ```

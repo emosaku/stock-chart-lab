@@ -37,6 +37,15 @@ def test_ingest_rejects_unconfigured_ticker(env, capsys):
     assert cli.main(["ingest", "--tickers", "ZZZ"]) == 2
 
 
+def test_indicators_after_ingest(env, capsys):
+    assert cli.main(["ingest", "--tickers", "AAA"]) == 0
+    assert cli.main(["indicators", "--tickers", "AAA"]) == 0
+    out = capsys.readouterr().out
+    assert "AAA" in out and "ok" in out
+    # BBB has no prices -> reported, non-zero exit
+    assert cli.main(["indicators"]) == 1
+
+
 def test_status_on_empty_db(env, capsys):
     assert cli.main(["status"]) == 0
     assert "no prices stored yet" in capsys.readouterr().out

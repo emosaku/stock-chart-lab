@@ -2,6 +2,7 @@
 later run unchanged as a Cloud Run job.
 
     stocklab ingest [--tickers GOOG META] [--full-refresh]
+    stocklab indicators [--tickers GOOG META]
     stocklab status
     stocklab check-source [--ticker GOOG]
 """
@@ -29,6 +30,10 @@ def main(argv: list[str] | None = None) -> int:
         help="re-fetch full history (use after moving start_date earlier)",
     )
     p.set_defaults(func=cmd_ingest)
+
+    p = sub.add_parser("indicators", help="recompute technical indicators from stored prices")
+    p.add_argument("--tickers", nargs="+", help="subset of configured tickers (default: all)")
+    p.set_defaults(func=cmd_indicators)
 
     p = sub.add_parser("status", help="coverage, latest run and data-quality summary")
     p.set_defaults(func=cmd_status)
@@ -88,6 +93,25 @@ def cmd_ingest(args) -> int:
             print(counts.to_string())
     # Non-zero exit when a ticker failed outright, so a scheduler marks the job failed.
     return 1 if any(r.status == "failed" for r in runs) else 0
+
+
+def cmd_indicators(args) -> int:
+    from stocklab.features import run_indicators
+    from stocklab.storage import get_storage
+
+    settings = get_settings()
+    tickers = [t.upper() for t in args.tickers] if args.tickers else None
+    unknown = set(tickers or []) - set(settings.data.tickers)
+    if unknown:
+        print(f"not in config/settings.yaml: {sorted(unknown)}", file=sys.stderr)
+        return 2
+    store = get_storage()
+    try:
+        results = run_indicators(settings, store, tickers=tickers)
+    finally:
+        store.close()
+    print(pd.DataFrame(results).to_string(index=False))
+    return 1 if any(r["status"] != "ok" for r in results) else 0
 
 
 def cmd_status(args) -> int:

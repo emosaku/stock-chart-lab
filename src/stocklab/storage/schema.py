@@ -106,6 +106,25 @@ DQ_ISSUES = Table(
     date_column="date",
 )
 
+# Technical indicators in long ("tidy") form: one row per ticker, day and indicator.
+# Long rather than one column per indicator so that changing a window in settings.yaml
+# (say SMA 20 -> 30) changes rows, not the table schema. Consumers pivot to wide with
+# features.load_indicators(). Recomputed in full per ticker on every run, because a
+# split restates the price history they're computed from.
+INDICATORS = Table(
+    name="indicators",
+    columns={
+        "ticker": "string",
+        "date": "date",
+        "indicator": "string",  # e.g. sma_50, rsi, macd_hist, bb_upper
+        "value": "float",
+        "params": "string",  # e.g. "length=14", so stored values say how they were made
+        "computed_at": "timestamp",
+    },
+    primary_key=("ticker", "date", "indicator"),
+    date_column="date",
+)
+
 TABLES: dict[str, Table] = {
-    t.name: t for t in (PRICES_DAILY, CORPORATE_ACTIONS, INGEST_RUNS, DQ_ISSUES)
+    t.name: t for t in (PRICES_DAILY, CORPORATE_ACTIONS, INGEST_RUNS, DQ_ISSUES, INDICATORS)
 }

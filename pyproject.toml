@@ -18,6 +18,8 @@ dependencies = [
     "python-dotenv",
     # NYSE trading calendar (holidays, one-off closures) for missing-day checks
     "exchange_calendars",
+    # Phase 2 indicators. 0.4+ is the numpy-2-compatible line; 0.3.x imports numpy.NaN
+    "pandas-ta>=0.4",
 ]
 
 [project.scripts]
@@ -29,11 +31,7 @@ dev = [
     "ruff",
 ]
 all = [
-    "stock-chart-lab[indicators,backtest,ml,app]",
-]
-indicators = [
-    # 0.4+ is the numpy-2-compatible line; 0.3.x imports numpy.NaN and breaks
-    "pandas-ta>=0.4",
+    "stock-chart-lab[backtest,ml,app]",
 ]
 backtest = [
     "vectorbt",

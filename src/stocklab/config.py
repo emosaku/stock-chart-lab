@@ -63,10 +63,44 @@ class DataSettings(BaseModel):
         return self
 
 
+class MacdSettings(BaseModel):
+    fast: int = Field(default=12, gt=0)
+    slow: int = Field(default=26, gt=0)
+    signal: int = Field(default=9, gt=0)
+
+    @model_validator(mode="after")
+    def _fast_below_slow(self) -> "MacdSettings":
+        if self.fast >= self.slow:
+            raise ValueError("macd.fast must be shorter than macd.slow")
+        return self
+
+
+class BollingerSettings(BaseModel):
+    length: int = Field(default=20, gt=1)
+    std: float = Field(default=2.0, gt=0)
+
+
+class IndicatorSettings(BaseModel):
+    sma_windows: list[int] = [20, 50, 200]
+    ema_windows: list[int] = [20, 50, 200]
+    rsi_length: int = Field(default=14, gt=1)
+    macd: MacdSettings = MacdSettings()
+    bollinger: BollingerSettings = BollingerSettings()
+    atr_length: int = Field(default=14, gt=1)
+    volume_ma_window: int = Field(default=20, gt=1)
+
+    @field_validator("sma_windows", "ema_windows")
+    @classmethod
+    def _windows(cls, v: list[int]) -> list[int]:
+        if any(w < 2 for w in v) or len(set(v)) != len(v):
+            raise ValueError("windows must be distinct integers >= 2")
+        return sorted(v)
+
+
 class Settings(BaseModel):
     data: DataSettings
+    indicators: IndicatorSettings = IndicatorSettings()
     # Typed properly when each phase lands; plain dicts until then.
-    indicators: dict[str, Any] = {}
     signals: dict[str, Any] = {}
     backtest: dict[str, Any] = {}
     models: dict[str, Any] = {}
